@@ -122,9 +122,8 @@ class Wepwnise(object):
         binPaths = f.readlines()
 
         for p in binPaths:
-            q = p.replace("\r\n", "")
+            q = p.replace("\n", "")
             output += [("myList = myList & \"%s\" & \",\"" % q)]
-
         f.close()
         return "\r\n".join(output)
 
