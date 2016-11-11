@@ -1,0 +1,9 @@
+C:\Program Files
+C:\Program Files (x86)
+C:\Intel
+C:\Windows\Syswow64
+C:\Windows\System32
+C:\Windows\winsxs
+C:\Windows\System32\DriverStore\FileRepository
+C:\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.Workflow.Compiler\
+C:\Windows\Microsoft.NET\Framework\
