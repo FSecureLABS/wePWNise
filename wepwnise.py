@@ -134,7 +134,7 @@ class Wepwnise(object):
         dirPaths = f.readlines()
 
         for p in dirPaths:
-            q = p.replace("\r\n", "")
+            q = p.replace("\n", "")
             output += [("RecursiveDir colFiles, \"%s\", \"*.exe\", True" % q)]
         return "\r\n".join(output)
 
