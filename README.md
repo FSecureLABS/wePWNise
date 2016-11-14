@@ -75,3 +75,6 @@ Similarly, to generate 64-bit payloads only, create a dummy x86 file and supply 
 ##License
 
 wePWNise is released under a 3-clause BSD License and maintained by [MWR InfoSecurity](https://mwrinfosecurity.com)
+
+##Credits
+This tool was originally developed by Vincent Yiu ([@vysecurity](https://twitter.com/vysecurity)).
