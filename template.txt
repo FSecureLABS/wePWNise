@@ -165,7 +165,12 @@ Dim allPaths() As String
 allPaths = Split(paths, ";")
 Dim Path As Variant
 For Each Path In allPaths
-ms = Path & "\" & program
+' With more complex env variables - esp complex path set - need to do some tidying or quote errors
+If Right(Path, 1) = Chr(34) Then 'Check if string ends with a quote
+    ms = Mid(Path, 2, Len(Path) - 2) & "\" & program
+Else
+    ms = Path & "\" & program
+End If
 If Not Dir(ms, vbDirectory) = vbNullString Then
 pathOf = ms
 Exit Function
